@@ -2,6 +2,7 @@
 
 //setup SDL
 #include <SDL.h>
+#include "Texture.h"
 
 class Game
 {
@@ -18,6 +19,9 @@ private:
 	SDL_Renderer* SdlRenderer;
 	//flag for the game loop
 	bool bIsGameOver;
+
+	// Player texture
+	Texture* PlayerTexture;
 
 public:
 	// Create the renderer

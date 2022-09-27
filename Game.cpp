@@ -41,6 +41,17 @@ bool Game::Start()
 	if (SdlRenderer != nullptr) {
 		cout << "Create Renderer - success" << endl;
 
+		// initialised the texture
+		PlayerTexture = new Texture();
+		// load the texture
+		if (PlayerTexture->LoadImageFromFile("Assets/Mario.png", SdlRenderer)) {
+			cout << "Player Texture - success" << endl;
+		}
+		else {
+			cout << "Player Texture - failed" << endl;
+			return false;
+		}
+
 		return true;
 	}
 
@@ -76,6 +87,7 @@ void Game::Draw()
 	SDL_RenderClear(SdlRenderer);
 
 	//@ TODO: Draw stuff here
+	PlayerTexture->Draw(SdlRenderer, 0, 0);
 
 	SDL_RenderPresent(SdlRenderer);
 }
