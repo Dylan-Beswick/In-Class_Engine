@@ -6,8 +6,11 @@
 #include "Animation.h"
 
 struct CharacterAnimations {
-	Animation* Idle;
 	Animation* AirAttack;
+	Animation* Idle;
+	Animation* Punch;
+	Animation* Run;
+	Animation* Attack;
 };
 
 class Game

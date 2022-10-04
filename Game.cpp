@@ -51,8 +51,11 @@ bool Game::Start()
 			cout << "Player Texture - success" << endl;
 
 			// initialize player animations
-			PlayerAnim.AirAttack = new Animation(PlayerTexture, 109, 0.1f, 0, 10);
-			PlayerAnim.Idle = new Animation(PlayerTexture, 109, 0.1f, 60, 62);
+			PlayerAnim.AirAttack = new Animation(PlayerTexture, 109, 0.1f, 0, 11);
+			PlayerAnim.Idle = new Animation(PlayerTexture, 109, 0.1f, 65, 68);
+			PlayerAnim.Attack = new Animation(PlayerTexture, 109, 0.1f, 13, 29);
+			PlayerAnim.Punch = new Animation(PlayerTexture, 109, 0.1f, 30, 37);
+			PlayerAnim.Run = new Animation(PlayerTexture, 109, 0.1f, 84, 89);
 		}
 		else {
 			cout << "Player Texture - failed" << endl;
@@ -88,6 +91,9 @@ void Game::Update()
 	//@TODO add anything that needs DeltaTime below here
 	PlayerAnim.AirAttack->Update(DeltaTime);
 	PlayerAnim.Idle->Update(DeltaTime);
+	PlayerAnim.Attack->Update(DeltaTime);
+	PlayerAnim.Run->Update(DeltaTime);
+	PlayerAnim.Punch->Update(DeltaTime);
 
 	// get how many seconds its been
 	int Seconds = SDL_GetTicks() / 1000;
@@ -107,8 +113,11 @@ void Game::Draw()
 	SDL_RenderClear(SdlRenderer);
 
 	//@ TODO: Draw stuff here
-	PlayerAnim.AirAttack->Draw(SdlRenderer, 50, 50, 5);
-	PlayerAnim.Idle->Draw(SdlRenderer, 300, 50, 5, true);
+	PlayerAnim.AirAttack->Draw(SdlRenderer, 0, 50, 5);
+	PlayerAnim.Punch->Draw(SdlRenderer, 200, 200, 5, true);
+	PlayerAnim.Idle->Draw(SdlRenderer, 400, 50, 5);
+	PlayerAnim.Run->Draw(SdlRenderer, 600, 200, 5, true);
+	PlayerAnim.Attack->Draw(SdlRenderer, 800, 50, 5);
 
 	SDL_RenderPresent(SdlRenderer);
 }
