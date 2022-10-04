@@ -3,6 +3,12 @@
 //setup SDL
 #include <SDL.h>
 #include "Texture.h"
+#include "Animation.h"
+
+struct CharacterAnimations {
+	Animation* Idle;
+	Animation* AirAttack;
+};
 
 class Game
 {
@@ -22,6 +28,10 @@ private:
 
 	// Player texture
 	Texture* PlayerTexture;
+	// Player animation
+	CharacterAnimations PlayerAnim;
+
+	unsigned int LastUpdateTime;
 
 public:
 	// Create the renderer

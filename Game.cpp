@@ -37,6 +37,8 @@ bool Game::Start()
 	// create the SDL renderer and define it
 	SdlRenderer = SDL_CreateRenderer(SdlWindow, 0, -1);
 
+	LastUpdateTime = SDL_GetTicks();
+
 	// make sure the renderer worked
 	if (SdlRenderer != nullptr) {
 		cout << "Create Renderer - success" << endl;
@@ -44,8 +46,13 @@ bool Game::Start()
 		// initialised the texture
 		PlayerTexture = new Texture();
 		// load the texture
-		if (PlayerTexture->LoadImageFromFile("Assets/Mario.png", SdlRenderer)) {
+		if (PlayerTexture->LoadImageFromFile("Assets/Hero-Spritesheet-50x37-109.png", 
+			SdlRenderer)) {
 			cout << "Player Texture - success" << endl;
+
+			// initialize player animations
+			PlayerAnim.AirAttack = new Animation(PlayerTexture, 109, 0.1f, 0, 10);
+			PlayerAnim.Idle = new Animation(PlayerTexture, 109, 0.1f, 60, 62);
 		}
 		else {
 			cout << "Player Texture - failed" << endl;
@@ -69,6 +76,19 @@ void Game::Update()
 {
 	//@ TODO: Add any changes to the game each frame
 
+	// how long since the last frame was updated in milliseconds
+	unsigned int tick = SDL_GetTicks() - LastUpdateTime;
+
+	// change the tick to seconds
+	float DeltaTime = tick / 1000.0f;
+
+	// Refresh the last update time
+	LastUpdateTime = SDL_GetTicks();
+
+	//@TODO add anything that needs DeltaTime below here
+	PlayerAnim.AirAttack->Update(DeltaTime);
+	PlayerAnim.Idle->Update(DeltaTime);
+
 	// get how many seconds its been
 	int Seconds = SDL_GetTicks() / 1000;
 
@@ -87,7 +107,8 @@ void Game::Draw()
 	SDL_RenderClear(SdlRenderer);
 
 	//@ TODO: Draw stuff here
-	PlayerTexture->Draw(SdlRenderer, 0, 0);
+	PlayerAnim.AirAttack->Draw(SdlRenderer, 50, 50, 5);
+	PlayerAnim.Idle->Draw(SdlRenderer, 300, 50, 5, true);
 
 	SDL_RenderPresent(SdlRenderer);
 }
@@ -106,8 +127,8 @@ void Game::Run(const char* title, int width, int height, bool fullscreen)
 	}
 
 	// create the SDL Window
-	SdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		width, height, CreationFlag);
+	SdlWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, 
+		SDL_WINDOWPOS_CENTERED, width, height, CreationFlag);
 
 	// check if the SDL Window worked
 	// create the renderer and start the game loop
