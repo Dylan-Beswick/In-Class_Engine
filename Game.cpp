@@ -114,10 +114,10 @@ void Game::Draw()
 
 	//@ TODO: Draw stuff here
 	PlayerAnim.AirAttack->Draw(SdlRenderer, 0, 50, 5);
-	PlayerAnim.Punch->Draw(SdlRenderer, 200, 200, 5, true);
-	PlayerAnim.Idle->Draw(SdlRenderer, 400, 50, 5);
-	PlayerAnim.Run->Draw(SdlRenderer, 600, 200, 5, true);
-	PlayerAnim.Attack->Draw(SdlRenderer, 800, 50, 5);
+	PlayerAnim.Punch->Draw(SdlRenderer, 200, 200, 3, true);
+	PlayerAnim.Idle->Draw(SdlRenderer, 400, 50, 1);
+	PlayerAnim.Run->Draw(SdlRenderer, 600, 200, 2, true);
+	PlayerAnim.Attack->Draw(SdlRenderer, 800, 50, 4);
 
 	SDL_RenderPresent(SdlRenderer);
 }
