@@ -1,4 +1,6 @@
 #include "Game.h"
+
+#include "Collider.h"
 #include <iostream>
 using namespace std;
 
@@ -37,11 +39,25 @@ bool Game::Start()
 	// create the SDL renderer and define it
 	SdlRenderer = SDL_CreateRenderer(SdlWindow, 0, -1);
 
+	// get the start time of the clock in milliseconds
 	LastUpdateTime = SDL_GetTicks();
 
 	// make sure the renderer worked
 	if (SdlRenderer != nullptr) {
 		cout << "Create Renderer - success" << endl;
+
+		// Start Detecting Input
+		UserInput = new Input();
+
+		//initiallised the player texture
+		PlayerTexture = new Texture();
+		// load the player texture
+		PlayerTexture->LoadImageFromFile(, SdlRenderer);
+		// construct the player as a character
+		Player* PlayerCharacter = new PlayerCharacter(PlayerTexture, Vector2(0, 0), 109);
+		CameObjects.push_back(PlayerCharacter);
+		BoxColliders.push_back(PlayerCharacter.GetCollision());
+
 
 		// initialised the texture
 		PlayerTexture = new Texture();
@@ -102,6 +118,11 @@ void Game::Update()
 	if (Seconds > 9) {
 		bIsGameOver = true;
 	}
+
+	// run the detection for the box colliders
+	for (unsigned int i = 0; i < BoxColliders.size(); ++i) {
+		BoxColliders[i]->Update(DeltaTime, BoxColliders);
+	}
 }
 
 void Game::Draw()
@@ -118,6 +139,16 @@ void Game::Draw()
 	PlayerAnim.Idle->Draw(SdlRenderer, 400, 50, 1);
 	PlayerAnim.Run->Draw(SdlRenderer, 600, 200, 2, true);
 	PlayerAnim.Attack->Draw(SdlRenderer, 800, 50, 4);
+
+	// cycle through all gameobjects and run their draw
+	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
+		GameObjects[i]->Draw(SdlRenderer);
+	}
+
+	// cycle through all of the box colliders
+	for (unsigned int i = 0; i < BoxColliders.size(); ++i) {
+		BoxColliders[i]->Draw(SdlRenderer);
+	}
 
 	SDL_RenderPresent(SdlRenderer);
 }

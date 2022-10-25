@@ -5,6 +5,10 @@
 #include "Texture.h"
 #include "Animation.h"
 
+#include <vector>
+
+#include "Collider.h"
+
 struct CharacterAnimations {
 	Animation* AirAttack;
 	Animation* Idle;
@@ -33,6 +37,11 @@ private:
 	Texture* PlayerTexture;
 	// Player animation
 	CharacterAnimations PlayerAnim;
+
+	// initialise all Gameobjects
+	vector<GameObject*> GameObjects;
+
+	vector<Collider*> BoxColliders;
 
 	unsigned int LastUpdateTime;
 
