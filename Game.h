@@ -4,18 +4,15 @@
 #include <SDL.h>
 #include "Texture.h"
 #include "Animation.h"
-
+#include "GameObject.h"
+#include "Character.h"
+#include <iostream>
 #include <vector>
-
+#include "Input.h"
 #include "Collider.h"
 
-struct CharacterAnimations {
-	Animation* AirAttack;
-	Animation* Idle;
-	Animation* Punch;
-	Animation* Run;
-	Animation* Attack;
-};
+using namespace std;
+
 
 class Game
 {
@@ -35,14 +32,18 @@ private:
 
 	// Player texture
 	Texture* PlayerTexture;
-	// Player animation
-	CharacterAnimations PlayerAnim;
+	// Enemy texture
+	Texture* EnemyTexture;
 
 	// initialise all Gameobjects
 	vector<GameObject*> GameObjects;
 
+	// all the colliders in the game will be stored here
 	vector<Collider*> BoxColliders;
 
+	Input* UserInput;
+
+	// how long since last update
 	unsigned int LastUpdateTime;
 
 public:

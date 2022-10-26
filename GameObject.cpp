@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Vector2.h"
 #include "SDL.h"
+#include "Collider.h"
 
 GameObject::GameObject()
 {

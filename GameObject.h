@@ -39,5 +39,6 @@ protected:
 	Vector2 ObjectCenter;
 	// Number of frames in the object texture
 	unsigned int NumberOfFrames;
+	
 };
 

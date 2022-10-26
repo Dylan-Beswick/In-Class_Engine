@@ -1,7 +1,9 @@
-#include "Game.h"
-
-#include "Collider.h"
 #include <iostream>
+#include "Game.h"
+#include "Character.h"
+#include "Player.h"
+#include "Enemy.h"
+#include "Collider.h"
 using namespace std;
 
 //Constructor
@@ -52,31 +54,27 @@ bool Game::Start()
 		//initiallised the player texture
 		PlayerTexture = new Texture();
 		// load the player texture
-		PlayerTexture->LoadImageFromFile(, SdlRenderer);
+		PlayerTexture->LoadImageFromFile("Assets/Hero-Spritesheet-50x37-109.png", SdlRenderer);
 		// construct the player as a character
-		Player* PlayerCharacter = new PlayerCharacter(PlayerTexture, Vector2(0, 0), 109);
-		CameObjects.push_back(PlayerCharacter);
-		BoxColliders.push_back(PlayerCharacter.GetCollision());
+		Player* PlayerCharacter = new Player(PlayerTexture, Vector2(0, 0), 109);
+		GameObjects.push_back(PlayerCharacter);
+		// add the gameobject collition into the games colliders to allow for proper detection
+		BoxColliders.push_back(PlayerCharacter->GetCollision());
 
+		//initiallised the enemy texture
+		EnemyTexture = new Texture();
+		// load the enemy texture
+		EnemyTexture->LoadImageFromFile("Assets/goblin-spritesheet-65x35-28.png", SdlRenderer);
+		
+		// construct the first enemy as an Enemy using the enemy texture
+		Enemy* EnemyCharacter = new Enemy(EnemyTexture, Vector2(0, 37), 28);
+		GameObjects.push_back(EnemyCharacter);
+		BoxColliders.push_back(EnemyCharacter->GetCollision());
 
-		// initialised the texture
-		PlayerTexture = new Texture();
-		// load the texture
-		if (PlayerTexture->LoadImageFromFile("Assets/Hero-Spritesheet-50x37-109.png", 
-			SdlRenderer)) {
-			cout << "Player Texture - success" << endl;
-
-			// initialize player animations
-			PlayerAnim.AirAttack = new Animation(PlayerTexture, 109, 0.1f, 0, 11);
-			PlayerAnim.Idle = new Animation(PlayerTexture, 109, 0.1f, 65, 68);
-			PlayerAnim.Attack = new Animation(PlayerTexture, 109, 0.1f, 13, 29);
-			PlayerAnim.Punch = new Animation(PlayerTexture, 109, 0.1f, 30, 37);
-			PlayerAnim.Run = new Animation(PlayerTexture, 109, 0.1f, 84, 89);
-		}
-		else {
-			cout << "Player Texture - failed" << endl;
-			return false;
-		}
+		// construct the second enemy as an Enemy using the same enemy texture
+		Enemy* EnemyCharacter2 = new Enemy(EnemyTexture, Vector2(0, 72), 28);
+		GameObjects.push_back(EnemyCharacter2);
+		BoxColliders.push_back(EnemyCharacter2->GetCollision());
 
 		return true;
 	}
@@ -89,6 +87,12 @@ bool Game::Start()
 void Game::ProcessInput()
 {
 	// @ TODO: Process player inputs
+	UserInput->UpdateInput(bIsGameOver);
+
+	// cycle through all gameobjects and run their input
+	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
+		GameObjects[i]->ProcessInput(UserInput);
+	}
 }
 
 void Game::Update()
@@ -105,18 +109,10 @@ void Game::Update()
 	LastUpdateTime = SDL_GetTicks();
 
 	//@TODO add anything that needs DeltaTime below here
-	PlayerAnim.AirAttack->Update(DeltaTime);
-	PlayerAnim.Idle->Update(DeltaTime);
-	PlayerAnim.Attack->Update(DeltaTime);
-	PlayerAnim.Run->Update(DeltaTime);
-	PlayerAnim.Punch->Update(DeltaTime);
 
-	// get how many seconds its been
-	int Seconds = SDL_GetTicks() / 1000;
-
-	// after 10 seconds kill the program
-	if (Seconds > 9) {
-		bIsGameOver = true;
+	// cycle through all gameobjects and run their update
+	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
+		GameObjects[i]->Update(DeltaTime);
 	}
 
 	// run the detection for the box colliders
@@ -134,11 +130,6 @@ void Game::Draw()
 	SDL_RenderClear(SdlRenderer);
 
 	//@ TODO: Draw stuff here
-	PlayerAnim.AirAttack->Draw(SdlRenderer, 0, 50, 5);
-	PlayerAnim.Punch->Draw(SdlRenderer, 200, 200, 3, true);
-	PlayerAnim.Idle->Draw(SdlRenderer, 400, 50, 1);
-	PlayerAnim.Run->Draw(SdlRenderer, 600, 200, 2, true);
-	PlayerAnim.Attack->Draw(SdlRenderer, 800, 50, 4);
 
 	// cycle through all gameobjects and run their draw
 	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
