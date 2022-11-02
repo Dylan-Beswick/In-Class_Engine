@@ -3,5 +3,8 @@
 class Collectable :
 	public GameObject
 {
+public:
+	Collectable();
+	~Collectable();
 };
 

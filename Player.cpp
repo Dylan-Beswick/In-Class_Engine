@@ -4,7 +4,7 @@
 Player::Player(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames)
 	: Character::Character(CharacterTexture, Pos, NumberOfFrames)
 {
-
+	Tag = "Player";
 }
 
 Player::~Player()
@@ -44,12 +44,23 @@ void Player::ProcessInput(Input* UserInput)
 		MovementX = 1.0f;
 	}
 
+	// store the colliders overlapping out collider
+	vector<Collider*> OtherColliders = GetCollision()->GetOverlappingColliders();
+
 	if (UserInput->IsKeyDown(SDL_SCANCODE_SPACE)) {
-		// store the colliders overlapping out collider
-		vector<Collider*> OtherColliders = GetCollision()->GetOverlappingColliders();
 		// run through all the colliders we're overlapping
 		for (unsigned int i = 0; i < OtherColliders.size(); ++i) {
-			SDL_Log("Collider Detected, Ememy: Ouch!");
+			if (OtherColliders[i]->GetOwner()->Tag == "Enemy") {
+				SDL_Log("Collider Detected, Ememy: Ouch!");
+				OtherColliders[i]->GetOwner()->DestroyGameObject();
+			}
+		}
+	}
+
+	// this will run through all the colliders overlapping each frame
+	for (vector<Collider*>::iterator it = OtherColliders.begin(); it < OtherColliders.end(); ++it) {
+		if ((*it)->GetOwner()->Tag == "Collectable") {
+			(*it)->GetOwner()->DestroyGameObject();
 		}
 	}
 

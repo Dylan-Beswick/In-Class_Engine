@@ -3,7 +3,8 @@
 Enemy::Enemy(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames)
 	: Character::Character(CharacterTexture, Pos, NumberOfFrames)
 {
-
+	MaxSpeed = 25.0f;
+	Tag = "Enemy";
 }
 
 Enemy::~Enemy()

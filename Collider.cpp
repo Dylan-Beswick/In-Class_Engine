@@ -8,6 +8,7 @@ Collider::Collider(GameObject* OwnerObject, Vector2 Position, Vector2 HalfDimens
 	bDebug = ShouldDebug;
 	OverlappedColliders = {};
 	this->OwnerObject = OwnerObject;
+	AllColliders = {};
 
 	// get the position and adjust for the size of the collider to center it
 	float x = Position.x - HalfDimensions.x;
@@ -22,10 +23,22 @@ Collider::Collider(GameObject* OwnerObject, Vector2 Position, Vector2 HalfDimens
 
 Collider::~Collider()
 {
+	for (vector<Collider*>::iterator it = AllColliders.begin(); it < AllColliders.end(); ++it) {
+		// check if the current iterated item is not this collider
+		if ((*it) != this) {
+			// since we return a boolean we can check if anything was removed
+			// this can be run without the if statement - it's mainly just for debugging
+			if ((*it)->RemoveColliderFromOverlapped(this)) {
+				SDL_Log("Collider Removed from overlapped...");
+			}
+		}
+	}
 }
 
 void Collider::Update(float DeltaTime, vector<Collider*> OtherColliders)
 {
+	AllColliders = OtherColliders;
+
 	// Check if this collider is intersecting with any other colliders in the game
 	for (unsigned int i = 0; i < OtherColliders.size(); ++i) {
 		// make sure the otehrcollider isn't our collider
@@ -38,7 +51,7 @@ void Collider::Update(float DeltaTime, vector<Collider*> OtherColliders)
 				vector<Collider*>::iterator it = find(OverlappedColliders.begin(), OverlappedColliders.end(), OtherColliders[i]);
 				if (it == OverlappedColliders.end()) {
 					OverlappedColliders.push_back(OtherColliders[i]);
-					//SDL_Log("Entered Collider");
+					SDL_Log("Entered Collider");
 				}
 			}
 			else {
@@ -47,7 +60,7 @@ void Collider::Update(float DeltaTime, vector<Collider*> OtherColliders)
 				// if it is then remove it from the array
 				if (it < OverlappedColliders.end()) {
 					OverlappedColliders.erase(it);
-					//SDL_Log("Exited Collider");
+					SDL_Log("Exited Collider");
 				}
 			}
 		}
@@ -71,12 +84,28 @@ void Collider::Draw(SDL_Renderer* Renderer)
 	}
 }
 
-vector<Collider*> Collider::GetOverlappingColliders()
+vector<Collider*> Collider::GetOverlappingColliders() const
 {
 	return OverlappedColliders;
 }
 
-GameObject* Collider::GetOwner()
+GameObject* Collider::GetOwner() const
 {
 	return OwnerObject;
+}
+
+bool Collider::RemoveColliderFromOverlapped(Collider* RCollider)
+{
+	// iterate through the overlapped colliders to see if our RCollider is in there
+	vector<Collider*>::iterator it = find(OverlappedColliders.begin(), OverlappedColliders.end(), RCollider);
+	// if the collider is within the array
+	if (it < OverlappedColliders.end()) {
+		OverlappedColliders.erase(it);
+		// if it was successfully erased return true
+		return true;
+	}
+
+	//this will run if the if statement is false
+	// nothing was erased
+	return false;
 }

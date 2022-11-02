@@ -10,10 +10,25 @@ GameObject::GameObject()
 	ObjectCenter = Position;
 	Collision = nullptr;
 	NumberOfFrames = 1;
+	bShouldDelete = false;
+	Tag = "";
 }
 
 GameObject::~GameObject()
 {
+	// remove the collision from memory if there is one
+	if (Collision != nullptr) {
+		SDL_Log("Delete collision...");
+		delete Collision;
+		Collision = nullptr;
+	}
+
+	// remove the texture from memory if there is one
+	if (ObjectTexture != nullptr) {
+		SDL_Log("Delete Object Texture...");
+		delete ObjectTexture;
+		ObjectTexture = nullptr;
+	}
 }
 
 void GameObject::Draw(SDL_Renderer* Renderer)
@@ -37,8 +52,8 @@ void GameObject::SetCollision(Vector2 Position, Vector2 HalfDimensions, bool Sho
 	// if there is a collision currently
 	if (Collision != nullptr) {
 		// clear it
-		delete(Collision);
-		//Collision = nullptr;
+		delete Collision;
+		Collision = nullptr;
 	}
 
 	// define the gameobjects collision
@@ -91,4 +106,16 @@ void GameObject::FindObjectCenter()
 Collider* GameObject::GetCollision()
 {
 	return Collision;
+}
+
+bool GameObject::ShouldDelete() const
+{
+	// this will be the key that tells the game this needs to be deleted
+	return bShouldDelete;
+}
+
+void GameObject::DestroyGameObject()
+{
+	// set should delete
+	bShouldDelete = true;
 }

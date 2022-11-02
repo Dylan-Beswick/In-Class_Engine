@@ -30,11 +30,6 @@ private:
 	//flag for the game loop
 	bool bIsGameOver;
 
-	// Player texture
-	Texture* PlayerTexture;
-	// Enemy texture
-	Texture* EnemyTexture;
-
 	// initialise all Gameobjects
 	vector<GameObject*> GameObjects;
 
@@ -59,6 +54,9 @@ public:
 
 	// Draw the game images to the screen
 	void Draw();
+
+	// run a function that will handle deleting objects BEFORE or AFTER all functionality is complete
+	void HandleGarbage();
 
 	// This will create the window and begin the game loop
 	//@param 1 - title of the window

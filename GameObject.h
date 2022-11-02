@@ -1,9 +1,12 @@
 #pragma once
+#include <iostream>
 #include "SDL.h"
 #include "Texture.h"
 #include "Vector2.h"
 #include "Input.h"
 #include "Collider.h"
+
+using namespace std;
 
 class GameObject
 {
@@ -28,6 +31,15 @@ public:
 	// Get the collision publically
 	Collider* GetCollision();
 
+	// return if this should be deleted
+	bool ShouldDelete() const;
+
+	// Set the game object to be destroyed
+	void DestroyGameObject();
+
+	// this will be an identifier for anything that needs to know specifics
+	string Tag;
+
 protected:
 	// positions for the game object to display on the window
 	Vector2 Position;
@@ -39,6 +51,9 @@ protected:
 	Vector2 ObjectCenter;
 	// Number of frames in the object texture
 	unsigned int NumberOfFrames;
-	
+
+private:
+	// this will define whether or not the gameobject should be deleted
+	bool bShouldDelete;
 };
 

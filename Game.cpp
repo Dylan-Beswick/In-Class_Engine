@@ -12,6 +12,8 @@ Game::Game()
 	//Set the SDL Window and Renderer to null in case it has momory
 	SdlWindow = nullptr;
 	SdlRenderer = nullptr;
+	LastUpdateTime = 0.0f;
+	UserInput = nullptr;
 
 	//Initialise the subsystem in the SDL2 Framework
 	if (SDL_InitSubSystem(SDL_INIT_EVERYTHING) != 0) {
@@ -52,29 +54,30 @@ bool Game::Start()
 		UserInput = new Input();
 
 		//initiallised the player texture
-		PlayerTexture = new Texture();
+		Texture* PlayerTexture = new Texture();
 		// load the player texture
 		PlayerTexture->LoadImageFromFile("Assets/Hero-Spritesheet-50x37-109.png", SdlRenderer);
 		// construct the player as a character
 		Player* PlayerCharacter = new Player(PlayerTexture, Vector2(0, 0), 109);
 		GameObjects.push_back(PlayerCharacter);
-		// add the gameobject collition into the games colliders to allow for proper detection
-		BoxColliders.push_back(PlayerCharacter->GetCollision());
 
 		//initiallised the enemy texture
-		EnemyTexture = new Texture();
+		Texture* EnemyTexture = new Texture();
 		// load the enemy texture
 		EnemyTexture->LoadImageFromFile("Assets/goblin-spritesheet-65x35-28.png", SdlRenderer);
 		
 		// construct the first enemy as an Enemy using the enemy texture
 		Enemy* EnemyCharacter = new Enemy(EnemyTexture, Vector2(0, 37), 28);
 		GameObjects.push_back(EnemyCharacter);
-		BoxColliders.push_back(EnemyCharacter->GetCollision());
+
+		//initiallised the enemy texture
+		EnemyTexture = new Texture();
+		// load the enemy texture
+		EnemyTexture->LoadImageFromFile("Assets/goblin-spritesheet-65x35-28.png", SdlRenderer);
 
 		// construct the second enemy as an Enemy using the same enemy texture
 		Enemy* EnemyCharacter2 = new Enemy(EnemyTexture, Vector2(0, 72), 28);
 		GameObjects.push_back(EnemyCharacter2);
-		BoxColliders.push_back(EnemyCharacter2->GetCollision());
 
 		return true;
 	}
@@ -108,11 +111,17 @@ void Game::Update()
 	// Refresh the last update time
 	LastUpdateTime = SDL_GetTicks();
 
-	//@TODO add anything that needs DeltaTime below here
+	// Clear the box colliders every frame
+	BoxColliders.clear();
 
 	// cycle through all gameobjects and run their update
 	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
 		GameObjects[i]->Update(DeltaTime);
+
+		// reassign or add box colliders based on gameobjects in the game
+		if (GameObjects[i]->GetCollision() != nullptr) {
+			BoxColliders.push_back(GameObjects[i]->GetCollision());
+		}
 	}
 
 	// run the detection for the box colliders
@@ -144,6 +153,32 @@ void Game::Draw()
 	SDL_RenderPresent(SdlRenderer);
 }
 
+void Game::HandleGarbage()
+{
+	// iterating through all of the gameobjects
+	// create an interator (it) object that starts at the start of the gameobjects array
+	// incrementing through the array and will delete game objects based on the iterator if it needs to
+	for (vector<GameObject*>::iterator it = GameObjects.begin(); it < GameObjects.end(); ++it) {
+		// if the gameobject is set to should delete
+		// no need for the "== true", the statement passes true or false anyway
+		if ((*it)->ShouldDelete()) {
+			SDL_Log("GameObject Deleted...");
+			// delete the specific gameobject iterator
+			delete *it;
+			// because we've deleted it we now need to remove it from the gameobjects array
+			// since we have the iterator info in this foreach loop we can do that easily
+			GameObjects.erase(it);
+			// because we've erased the item from the iterator, we now need to stop the for loop
+			// or we'll crash since the vector condition is now smaller than it's supposed to be
+			// this is what out of scope means
+			
+			// break exits the for loop
+			// it will no longer run anthing else in the for loop and just stop
+			break;
+		}
+	}
+}
+
 void Game::Run(const char* title, int width, int height, bool fullscreen)
 {
 	// define the creation flag
@@ -168,6 +203,9 @@ void Game::Run(const char* title, int width, int height, bool fullscreen)
 
 		// run the game loop
 		while (!bIsGameOver) {
+			// delete gameobjects that are marked for delete
+			HandleGarbage();
+
 			// check for player input
 			ProcessInput();
 

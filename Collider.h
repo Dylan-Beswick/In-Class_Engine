@@ -23,13 +23,16 @@ public:
 	SDL_FRect ColliderRect;
 
 	// Get the other colliders that are overlapping this collider
-	vector<Collider*> GetOverlappingColliders();
+	vector<Collider*> GetOverlappingColliders() const;
 
 	// debug to draw the collider to the screen
 	bool bDebug;
 
 	// this will return the owner object
-	GameObject* GetOwner();
+	GameObject* GetOwner() const;
+
+	// remove a single collider from overlapped
+	bool RemoveColliderFromOverlapped(Collider* RCollider);
 
 protected:
 	// Store all the colliders that are currently overlapping this collider
@@ -37,5 +40,8 @@ protected:
 
 	// store the owner game object if there is one
 	GameObject* OwnerObject;
+
+	// Store all colliders in the game
+	vector<Collider*> AllColliders;
 };
 
