@@ -24,14 +24,18 @@ public:
 
 private:
 	//the window that we will be rendering to
-	SDL_Window* SdlWindow;
+	// with vectors we can now store more than 1 window and renderer
+	vector<SDL_Window*> SdlWindow;
 	//2D renderer
-	SDL_Renderer* SdlRenderer;
+	vector<SDL_Renderer*> SdlRenderer;
 	//flag for the game loop
 	bool bIsGameOver;
 
 	// initialise all Gameobjects
 	vector<GameObject*> GameObjects;
+
+	// initialise all of the sub window game objects
+	vector<GameObject*> SubGameObjects;
 
 	// all the colliders in the game will be stored here
 	vector<Collider*> BoxColliders;
@@ -42,6 +46,9 @@ private:
 	unsigned int LastUpdateTime;
 
 public:
+	// Add a random rectangle to the secondary window
+	void AddRandomRectangle(bool bFilled = false);
+
 	// Create the renderer
 	// Allocate any objects we want
 	bool Start();

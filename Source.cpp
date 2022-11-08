@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 	Game* NewGame = new Game();
 
 	// run the game
-	NewGame->Run("In-Class_Engine", 1280, 720, false);
+	NewGame->Run("In-Class_Engine", 980, 540, false);
 
 	// deallocate the game object
 	delete NewGame;
