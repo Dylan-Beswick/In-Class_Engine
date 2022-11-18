@@ -1,14 +1,12 @@
 #include <iostream>
 #include "Game.h"
-#include "Character.h"
-#include "Player.h"
-#include "Enemy.h"
-#include "Collider.h"
 #include "resource.h"
 #include <Windows.h>
 #include "SDL_syswm.h"
 #include "RectangleObject.h"
 #include <math.h>
+#include "PlayState.h"
+#include "MenuState.h"
 
 using namespace std;
 
@@ -41,8 +39,6 @@ Game::Game()
 //Deconstructor
 Game::~Game()
 {
-	// clear the array gameobjects from memory
-	vector<GameObject*>().swap(GameObjects);
 	vector<GameObject*>().swap(SubGameObjects);
 }
 
@@ -83,31 +79,11 @@ bool Game::Start()
 		// Start Detecting Input
 		UserInput = new Input(this);
 
-		//initiallised the player texture
-		Texture* PlayerTexture = new Texture();
-		// load the player texture
-		PlayerTexture->LoadImageFromFile("Assets/Hero-Spritesheet-50x37-109.png", SdlRenderer[0]);
-		// construct the player as a character
-		Player* PlayerCharacter = new Player(PlayerTexture, Vector2(0, 0), 109);
-		GameObjects.push_back(PlayerCharacter);
-
-		//initiallised the enemy texture
-		Texture* EnemyTexture = new Texture();
-		// load the enemy texture
-		EnemyTexture->LoadImageFromFile("Assets/goblin-spritesheet-65x35-28.png", SdlRenderer[0]);
-		
-		// construct the first enemy as an Enemy using the enemy texture
-		Enemy* EnemyCharacter = new Enemy(EnemyTexture, Vector2(0, 37), 28);
-		GameObjects.push_back(EnemyCharacter);
-
-		//initiallised the enemy texture
-		EnemyTexture = new Texture();
-		// load the enemy texture
-		EnemyTexture->LoadImageFromFile("Assets/goblin-spritesheet-65x35-28.png", SdlRenderer[0]);
-
-		// construct the second enemy as an Enemy using the same enemy texture
-		Enemy* EnemyCharacter2 = new Enemy(EnemyTexture, Vector2(0, 72), 28);
-		GameObjects.push_back(EnemyCharacter2);
+		// creating a starter game state
+		MenuState* StarterGameState = new MenuState();
+		StarterGameState->StateID = 0;
+		StarterGameState->OnEnter(SdlRenderer[0]);
+		GameStates.push_back(StarterGameState);
 
 		return true;
 	}
@@ -122,10 +98,8 @@ void Game::ProcessInput()
 	// @ TODO: Process player inputs
 	UserInput->UpdateInput(bIsGameOver, SdlWindow);
 
-	// cycle through all gameobjects and run their input
-	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
-		GameObjects[i]->ProcessInput(UserInput);
-	}
+	// run the gamestate process input
+	GameStates.back()->ProcessInput(UserInput);
 }
 
 void Game::Update()
@@ -141,23 +115,29 @@ void Game::Update()
 	// Refresh the last update time
 	LastUpdateTime = SDL_GetTicks();
 
-	// Clear the box colliders every frame
-	BoxColliders.clear();
+	// 1000ms per second
+	if (SDL_GetTicks() > 5000) {
+		if (GameStates.back()->StateID == 0) {
+			// telling the state it's exited
+			GameStates.back()->OnExit();
+			// deallocate the state from memory
+			delete GameStates.back();
+			// reduce the size of the vector
+			GameStates.pop_back();
 
-	// cycle through all gameobjects and run their update
-	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
-		GameObjects[i]->Update(DeltaTime);
-
-		// reassign or add box colliders based on gameobjects in the game
-		if (GameObjects[i]->GetCollision() != nullptr) {
-			BoxColliders.push_back(GameObjects[i]->GetCollision());
+			// create a new play state
+			PlayState* NewPlayState = new PlayState();
+			// change the ID so this if condition doesn't run again
+			NewPlayState->StateID = 1;
+			// Tell the GameState its stated
+			NewPlayState->OnEnter(SdlRenderer[0]);
+			// add it to the GameState Stack
+			GameStates.push_back(NewPlayState);
 		}
 	}
 
-	// run the detection for the box colliders
-	for (unsigned int i = 0; i < BoxColliders.size(); ++i) {
-		BoxColliders[i]->Update(DeltaTime, BoxColliders);
-	}
+	// run the gamestate update
+	GameStates.back()->Update(DeltaTime);
 }
 
 void Game::Draw()
@@ -179,15 +159,8 @@ void Game::Draw()
 		(*it)->Draw(SdlRenderer[1]);
 	}
 
-	// cycle through all gameobjects and run their draw
-	for (unsigned int i = 0; i < GameObjects.size(); ++i) {
-		GameObjects[i]->Draw(SdlRenderer[0]);
-	}
-
-	// cycle through all of the box colliders
-	for (unsigned int i = 0; i < BoxColliders.size(); ++i) {
-		BoxColliders[i]->Draw(SdlRenderer[0]);
-	}
+	// run the draw in our gamestate
+	GameStates.back()->Draw(SdlRenderer[0]);
 
 	// getting all the newly rendered stuff and showing it onto the window
 	for (vector<SDL_Renderer*>::iterator it = SdlRenderer.begin(); it < SdlRenderer.end(); ++it) {
@@ -197,28 +170,8 @@ void Game::Draw()
 
 void Game::HandleGarbage()
 {
-	// iterating through all of the gameobjects
-	// create an interator (it) object that starts at the start of the gameobjects array
-	// incrementing through the array and will delete game objects based on the iterator if it needs to
-	for (vector<GameObject*>::iterator it = GameObjects.begin(); it < GameObjects.end(); ++it) {
-		// if the gameobject is set to should delete
-		// no need for the "== true", the statement passes true or false anyway
-		if ((*it)->ShouldDelete()) {
-			SDL_Log("GameObject Deleted...");
-			// delete the specific gameobject iterator
-			delete *it;
-			// because we've deleted it we now need to remove it from the gameobjects array
-			// since we have the iterator info in this foreach loop we can do that easily
-			GameObjects.erase(it);
-			// because we've erased the item from the iterator, we now need to stop the for loop
-			// or we'll crash since the vector condition is now smaller than it's supposed to be
-			// this is what out of scope means
-			
-			// break exits the for loop
-			// it will no longer run anthing else in the for loop and just stop
-			break;
-		}
-	}
+	// run the gamestate Handle Garbage
+	GameStates.back()->HandleGarbage();
 }
 
 void Game::Run(const char* title, int width, int height, bool fullscreen)

@@ -16,7 +16,7 @@ public:
 	~Collider();
 
 	// we need to detect if we are colliding with any of the other colliders in the game
-	void Update(float DeltaTime, vector<Collider*> OtherColliders);
+	void Update(float DeltaTime, vector<Collider*>& OtherColliders);
 	void Draw(SDL_Renderer* Renderer);
 
 	// set the bounds for the collider
@@ -31,17 +31,11 @@ public:
 	// this will return the owner object
 	GameObject* GetOwner() const;
 
-	// remove a single collider from overlapped
-	bool RemoveColliderFromOverlapped(Collider* RCollider);
-
 protected:
 	// Store all the colliders that are currently overlapping this collider
 	vector<Collider*> OverlappedColliders;
 
 	// store the owner game object if there is one
 	GameObject* OwnerObject;
-
-	// Store all colliders in the game
-	vector<Collider*> AllColliders;
 };
 

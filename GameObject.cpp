@@ -8,7 +8,6 @@ GameObject::GameObject()
 	Position = Vector2().Zero();
 	ObjectTexture = nullptr;
 	ObjectCenter = Position;
-	Collision = nullptr;
 	NumberOfFrames = 1;
 	bShouldDelete = false;
 	Tag = "";
@@ -17,11 +16,12 @@ GameObject::GameObject()
 GameObject::~GameObject()
 {
 	// remove the collision from memory if there is one
-	if (Collision != nullptr) {
-		SDL_Log("Delete collision...");
-		delete Collision;
-		Collision = nullptr;
+	for (vector<Collider*>::iterator Col = Collisions.begin(); Col < Collisions.end(); Col++) {
+		delete *Col;
 	}
+
+	// shrink the array to a 0 size vector
+	vector<Collider*>().swap(Collisions);
 
 	// remove the texture from memory if there is one
 	if (ObjectTexture != nullptr) {
@@ -31,33 +31,54 @@ GameObject::~GameObject()
 	}
 }
 
-void GameObject::Draw(SDL_Renderer* Renderer)
-{
-}
-
-void GameObject::Update(float DeltaTime)
+void GameObject::UpdateGameObject(float DeltaTime, vector<GameObject*>& GameObjectStack)
 {
 	// this will find the object center based on the texture if there is one
 	FindObjectCenter();
 	// this will update the collision position to match the object center
 	UpdateCollisionPosition();
+
+	// Creater a temporary vector of all colliders
+	vector<Collider*> OtherColliders = {};
+
+	// search through all the gameobjects to get their colliders
+	for (vector<GameObject*>::iterator GO = GameObjectStack.begin(); GO < GameObjectStack.end(); GO++) {
+		// point to the vector of colliders in each gameobject
+		vector<Collider*> GOColliders = (*GO)->GetCollisions();
+		// loop through the gameobject colliders and add them each into the OtherColliders vector
+		for (vector<Collider*>::iterator Col = GOColliders.begin(); Col < GOColliders.end(); Col++) {
+			// add the collider to the vector
+			OtherColliders.push_back(*Col);
+		}
+	}
+
+	// handle the collision detection for out colliders
+	for (vector<Collider*>::iterator Col = OtherColliders.begin(); Col < OtherColliders.end(); Col++) {
+		(*Col)->Update(DeltaTime, OtherColliders);
+	}
+
+	// run the derived Update
+	Update(DeltaTime);
 }
 
-void GameObject::ProcessInput(Input* UserInput)
+void GameObject::Draw(SDL_Renderer* Renderer)
 {
+	// check through the colliders if we have any
+	for (vector<Collider*>::iterator Col = Collisions.begin(); Col < Collisions.end(); Col++) {
+		// run the draw if they have debug set
+		if ((*Col)->bDebug) {
+			// draw each collider
+			(*Col)->Draw(Renderer);
+		}
+	}
 }
 
 void GameObject::SetCollision(Vector2 Position, Vector2 HalfDimensions, bool ShouldDebug)
 {
-	// if there is a collision currently
-	if (Collision != nullptr) {
-		// clear it
-		delete Collision;
-		Collision = nullptr;
-	}
-
 	// define the gameobjects collision
-	Collision = new Collider(this, Position, HalfDimensions, ShouldDebug);
+	Collider* NewCollision = new Collider(this, Position, HalfDimensions, ShouldDebug);
+	// add the collider to the collision vector
+	Collisions.push_back(NewCollision);
 }
 
 void GameObject::SetCollisionDimensions(Collider* Collision, Vector2 HalfDimensions)
@@ -73,14 +94,14 @@ void GameObject::SetCollisionDimensions(Collider* Collision, Vector2 HalfDimensi
 void GameObject::UpdateCollisionPosition()
 {
 	// check if there is even a collision
-	if (Collision != nullptr) {
-		float w = Collision->ColliderRect.w / 2;
-		float h = Collision->ColliderRect.h / 2;
+	for (vector<Collider*>::iterator Col = Collisions.begin(); Col < Collisions.end(); Col++) {
+		float w = (*Col)->ColliderRect.w / 2;
+		float h = (*Col)->ColliderRect.h / 2;
 
 		// Change the position of the collider to equal the object center
 		// center the collider based on it's half dimensions
-		Collision->ColliderRect.x = ObjectCenter.x - w;
-		Collision->ColliderRect.y = ObjectCenter.y - h;
+		(*Col)->ColliderRect.x = ObjectCenter.x - w;
+		(*Col)->ColliderRect.y = ObjectCenter.y - h;
 	}
 }
 
@@ -103,9 +124,10 @@ void GameObject::FindObjectCenter()
 	}
 }
 
-Collider* GameObject::GetCollision()
+vector<Collider*> GameObject::GetCollisions()
 {
-	return Collision;
+	// return a vector of Collisions
+	return Collisions;
 }
 
 bool GameObject::ShouldDelete() const

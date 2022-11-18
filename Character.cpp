@@ -30,12 +30,10 @@ Character::Character(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames)
 	SetCollision(ObjectCenter, Vector2(w, h));
 }
 
-Character::~Character()
-{
-}
-
 void Character::Draw(SDL_Renderer* Renderer)
 {
+	GameObject::Draw(Renderer);
+
 	SDL_Rect Clip;
 	Clip.x = 0;
 	Clip.y = 0;
@@ -54,11 +52,6 @@ void Character::Update(float DeltaTime)
 	Velocity = MovementAxis.Normalised() * MaxSpeed;
 	// move the character based on velocity
 	Position += Velocity * DeltaTime;
-}
-
-void Character::ProcessInput(Input* UserInput)
-{
-
 }
 
 void Character::SetMovementAxis(Vector2 Axis)

@@ -157,8 +157,11 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="MenuState.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayState.cpp" />
     <ClCompile Include="RectangleObject.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -172,8 +175,11 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="MenuState.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayState.h" />
     <ClInclude Include="RectangleObject.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Texture.h" />

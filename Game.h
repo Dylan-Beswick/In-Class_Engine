@@ -10,6 +10,7 @@
 #include <vector>
 #include "Input.h"
 #include "Collider.h"
+#include "GameState.h"
 
 using namespace std;
 
@@ -31,14 +32,11 @@ private:
 	//flag for the game loop
 	bool bIsGameOver;
 
-	// initialise all Gameobjects
-	vector<GameObject*> GameObjects;
+	// this will store our current gamestate
+	vector<GameState*> GameStates;
 
 	// initialise all of the sub window game objects
 	vector<GameObject*> SubGameObjects;
-
-	// all the colliders in the game will be stored here
-	vector<Collider*> BoxColliders;
 
 	Input* UserInput;
 

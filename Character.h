@@ -8,11 +8,11 @@ class Character :
 {
 public:
 	Character(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames = 1);
-	~Character();
+	~Character() {}
 
 	void Draw(SDL_Renderer* Renderer) override;
 	virtual void Update(float DeltaTime) override;
-	virtual void ProcessInput(Input* UserInput) override;
+	virtual void ProcessInput(Input* UserInput) override {}
 
 protected:
 	float MaxSpeed;

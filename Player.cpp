@@ -45,7 +45,7 @@ void Player::ProcessInput(Input* UserInput)
 	}
 
 	// store the colliders overlapping out collider
-	vector<Collider*> OtherColliders = GetCollision()->GetOverlappingColliders();
+	vector<Collider*> OtherColliders = GetCollisions()[0]->GetOverlappingColliders();
 
 	if (UserInput->IsKeyDown(SDL_SCANCODE_SPACE)) {
 		// run through all the colliders we're overlapping
