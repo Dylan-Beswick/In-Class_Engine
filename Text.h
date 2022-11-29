@@ -29,7 +29,7 @@ public:
 	Vector2 GetTextDimensions();
 
 	// Center the text using its dimensions
-	void CenterText();
+	void CenterText(bool bCenterText);
 
 protected:
 	// this will actually define and render the text
@@ -46,6 +46,8 @@ protected:
 	SDL_Rect TextBox;
 	// bool to decide if we need to update the text
 	bool bShouldUpdateText;
+	// center text bool
+	bool bCenterText;
 	// Text rendering variables
 	// Colour
 	SDL_Colour Colour;

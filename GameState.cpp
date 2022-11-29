@@ -4,6 +4,7 @@ GameState::GameState()
 {
 	StateID = 0;
 	DBColour = { 15, 15, 15, 255 };
+	bShouldDelete = false;
 }
 
 GameState::~GameState()
@@ -61,4 +62,14 @@ void GameState::HandleGarbage()
 			GO++;
 		}
 	}
+}
+
+bool GameState::ShouldDelete()
+{
+	return bShouldDelete;
+}
+
+void GameState::DestroyGameState()
+{
+	bShouldDelete = true;
 }

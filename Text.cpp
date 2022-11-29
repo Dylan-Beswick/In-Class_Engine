@@ -8,6 +8,7 @@ Text::Text()
 	TextSurface = nullptr;
 	TextTexture = nullptr;
 	bShouldUpdateText = false;
+	bCenterText = false;
 }
 
 Text::~Text()
@@ -47,20 +48,47 @@ bool Text::InitialiseFont(SDL_Renderer* Renderer, string FontPath, int FontSize,
 
 void Text::Draw(SDL_Renderer* Renderer)
 {
+	// Change the text if we need to
+	if (bShouldUpdateText) {
+		// update text with the new text
+		SetText(Renderer);
 
+		// make sure this only runs when it needs to
+		bShouldUpdateText = false;
+	}
+
+	if (bCenterText) {
+		// center the text by subtracting its positions by its dimentions (x - width) (y - height)
+		int HalfWidth = SDL_max(TextBox.w, 1) / 2;
+		int HalfHeight = SDL_max(TextBox.h, 1) / 2;
+
+		TextBox.x -= HalfWidth;
+		TextBox.y -= HalfHeight;
+
+		bCenterText = false;
+	}
+
+	// Render the text to the screen/renderer
+	SDL_RenderCopy(Renderer, TextTexture, nullptr, &TextBox);
 }
 
 void Text::ChangeText(string NewText)
 {
+	// Change the text that should be rendered
+	TextToRenderer = NewText;
+	// Tell the draw it can update the text
+	bShouldUpdateText = true;
+
 }
 
 Vector2 Text::GetTextDimensions()
 {
-	return Vector2();
+	return Vector2(TextBox.w, TextBox.h);
 }
 
-void Text::CenterText()
+void Text::CenterText(bool bCenterText)
 {
+	this->bCenterText = bCenterText;
 }
 
 bool Text::SetText(SDL_Renderer* Renderer)
@@ -68,7 +96,7 @@ bool Text::SetText(SDL_Renderer* Renderer)
 	// make sure the font loaded correctly
 	if (Font == nullptr) {
 		// if Font is nullptr then it couldn't find the path
-		SDL_Log("Font not found...");
+		SDL_Log("Font not found... - %s", SDL_GetError());
 
 		return false;
 	}
@@ -105,7 +133,9 @@ bool Text::SetText(SDL_Renderer* Renderer)
 		return false;
 	}
 
-	TextBox = { Position.x, Position.y, TextSurface->w, TextSurface->h };
+	// create the render space
+	// converting the floating points from the postion vector into integers
+	TextBox = { static_cast<int>(Position.x), static_cast<int>(Position.y), TextSurface->w, TextSurface->h };
 
 	// deallocate the surface
 	SDL_FreeSurface(TextSurface);

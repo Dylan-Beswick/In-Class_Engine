@@ -1,10 +1,12 @@
 #include "Player.h"
 #include "SDL.h"
+#include "Game.h"
 
 Player::Player(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames)
 	: Character::Character(CharacterTexture, Pos, NumberOfFrames)
 {
 	Tag = "Player";
+	MaxSpeed = 600;
 }
 
 Player::~Player()
@@ -23,6 +25,7 @@ void Player::ProcessInput(Input* UserInput)
 {
 	float MovementX = 0.0f;
 	float MovementY = 0.0f;
+	float Speed = 2000.0f;
 
 	// check if W key is down
 	if (UserInput->IsKeyDown(SDL_SCANCODE_W)) {
@@ -44,6 +47,8 @@ void Player::ProcessInput(Input* UserInput)
 		MovementX = 1.0f;
 	}
 
+	AddForce(Speed, Vector2(MovementX, MovementY));
+
 	// store the colliders overlapping out collider
 	vector<Collider*> OtherColliders = GetCollisions()[0]->GetOverlappingColliders();
 
@@ -51,7 +56,8 @@ void Player::ProcessInput(Input* UserInput)
 		// run through all the colliders we're overlapping
 		for (unsigned int i = 0; i < OtherColliders.size(); ++i) {
 			if (OtherColliders[i]->GetOwner()->Tag == "Enemy") {
-				SDL_Log("Collider Detected, Ememy: Ouch!");
+				// destroy enemy
+				Game::GetGameInstance()->Score += 100;
 				OtherColliders[i]->GetOwner()->DestroyGameObject();
 			}
 		}
@@ -63,6 +69,4 @@ void Player::ProcessInput(Input* UserInput)
 			(*it)->GetOwner()->DestroyGameObject();
 		}
 	}
-
-	SetMovementAxis(Vector2(MovementX, MovementY));
 }

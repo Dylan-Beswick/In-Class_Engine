@@ -14,16 +14,30 @@
 
 using namespace std;
 
+// this holds a reference to the memory of the game instance
+// this will only ever have one class assigned per game start
+static Game* GameInstance;
 
 class Game
 {
 public:
-	//constructor
-	Game();
-	//deconstructor
-	~Game();
+	// if there is no game instance this will create one then return it
+	// if there already is a game instance this will just return the current one
+	static Game* GetGameInstance();
+
+	// since we dont have public access to the destructor we need to delete the class in a static function
+	static void DestroyGameInstance();
+
+	// score that remains over states
+	int Score;
 
 private:
+	// these need to be private so we can't create non-instance versions of the game instance
+	//constructor
+	Game();
+	//destructor
+	~Game();
+
 	//the window that we will be rendering to
 	// with vectors we can now store more than 1 window and renderer
 	vector<SDL_Window*> SdlWindow;
@@ -44,6 +58,9 @@ private:
 	unsigned int LastUpdateTime;
 
 public:
+	// this will change the game state
+	void ChangeGameState(GameState* NewState, Uint32 StateID);
+
 	// Add a random rectangle to the secondary window
 	void AddRandomRectangle(bool bFilled = false);
 

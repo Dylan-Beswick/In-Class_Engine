@@ -43,6 +43,8 @@ public:
 	// this will be an identifier for anything that needs to know specifics
 	string Tag;
 
+	Vector2 GetPosition() { return ObjectCenter; }
+
 protected:
 	virtual void Update(float DeltaTime) {}
 	// positions for the game object to display on the window

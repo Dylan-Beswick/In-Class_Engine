@@ -15,6 +15,7 @@ Character::Character(Texture* CharacterTexture, Vector2 Pos, int NumberOfFrames)
 	Velocity = Vector2().Zero();
 	MovementAxis = Vector2().Zero();
 	MaxSpeed = 100.0f;
+	Drag = 0.90f;
 	float w = 10.0f;
 	float h = 10.0f;
 	
@@ -48,10 +49,24 @@ void Character::Update(float DeltaTime)
 	// this will make sure the gameobject Update code runs first
 	GameObject::Update(DeltaTime);
 
-	// Set the velocity to be our movement axis normalised * our speed
-	Velocity = MovementAxis.Normalised() * MaxSpeed;
+	// increase velocity using acceleration to simulate physics movement
+	Velocity += Acceleration * DeltaTime;
+
+	// cap the velocity using max speed
+	if (Velocity.Length() > MaxSpeed) {
+		Velocity = Velocity.Normalised() * MaxSpeed;
+	}
+
 	// move the character based on velocity
 	Position += Velocity * DeltaTime;
+
+	Acceleration = Vector2().Zero();
+	Velocity *= Drag;
+}
+
+void Character::AddForce(float Force, Vector2 Direction)
+{
+	Acceleration += Direction.Normalised() * Force;
 }
 
 void Character::SetMovementAxis(Vector2 Axis)

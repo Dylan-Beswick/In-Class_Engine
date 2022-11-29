@@ -7,8 +7,29 @@
 #include <math.h>
 #include "PlayState.h"
 #include "MenuState.h"
+#include "SDL_mixer.h"
 
 using namespace std;
+
+Game* Game::GetGameInstance()
+{
+	// if there is no game instance then make one
+	if (GameInstance == nullptr) {
+		GameInstance = new Game();
+	}
+
+	// return the game instance
+	return GameInstance;
+}
+
+void Game::DestroyGameInstance()
+{
+	// check if there is a game instance
+	if (GameInstance != nullptr) {
+		delete GameInstance;
+		GameInstance = nullptr;
+	}
+}
 
 //Constructor
 Game::Game()
@@ -18,6 +39,7 @@ Game::Game()
 	SdlRenderer = { nullptr, nullptr };
 	LastUpdateTime = 0.0f;
 	UserInput = nullptr;
+	Score = 0;
 
 	//Initialise the subsystem in the SDL2 Framework
 	if (SDL_InitSubSystem(SDL_INIT_EVERYTHING) != 0) {
@@ -28,6 +50,34 @@ Game::Game()
 
 	}
 	else {
+		// Initialise our font library
+		if (TTF_Init() == -1) {
+			// if the font subsystem failed
+			bIsGameOver = true;
+
+			SDL_Log("Font subsystem - Failed");
+
+			return;
+		}
+
+		// Initialise the Audio subsystem
+		if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+			// end the game and log failure
+			bIsGameOver = true;
+
+			SDL_Log("Audio subsytem - Failed");
+
+			return;
+		}
+		else {
+			// activate the audio if successful
+
+			// @param 1 - The audio device frequency, specified in Hz (Hertz); in modern time 48000 is reasonable as a default
+			// @param 2 - The SDL audio format; SDL uses this to know what format to read the audio as;
+			// @param 3 - Audio channels (1 - Mono or 2 - Stereo)
+			// @param 4 - BitChunks; The latency the audio will send to the audio listener (Lower = Fastest; 1024 & 4096)
+			Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096);
+		}
 
 		//enable the game loop
 		bIsGameOver = false;
@@ -40,6 +90,23 @@ Game::Game()
 Game::~Game()
 {
 	vector<GameObject*>().swap(SubGameObjects);
+}
+
+void Game::ChangeGameState(GameState* NewState, Uint32 StateID)
+{
+	if (!GameStates.empty()) {
+		// exit the game state
+		GameStates.back()->OnExit();
+		// delete the gamestate / mark as destroy for garbage collection
+		GameStates.back()->DestroyGameState();
+	}
+
+	// create and assign the new game state
+	NewState->StateID = StateID;
+	GameStates.push_back(NewState);
+
+	// this will make sure to run the on enter for all change game states
+	GameStates.back()->OnEnter(SdlRenderer[0], SdlWindow[0]);
 }
 
 void Game::AddRandomRectangle(bool bFilled)
@@ -81,9 +148,7 @@ bool Game::Start()
 
 		// creating a starter game state
 		MenuState* StarterGameState = new MenuState();
-		StarterGameState->StateID = 0;
-		StarterGameState->OnEnter(SdlRenderer[0]);
-		GameStates.push_back(StarterGameState);
+		ChangeGameState(StarterGameState, 0);
 
 		return true;
 	}
@@ -115,6 +180,7 @@ void Game::Update()
 	// Refresh the last update time
 	LastUpdateTime = SDL_GetTicks();
 
+	/*
 	// 1000ms per second
 	if (SDL_GetTicks() > 5000) {
 		if (GameStates.back()->StateID == 0) {
@@ -130,11 +196,11 @@ void Game::Update()
 			// change the ID so this if condition doesn't run again
 			NewPlayState->StateID = 1;
 			// Tell the GameState its stated
-			NewPlayState->OnEnter(SdlRenderer[0]);
+			NewPlayState->OnEnter(SdlRenderer[0], SdlWindow[0]);
 			// add it to the GameState Stack
 			GameStates.push_back(NewPlayState);
 		}
-	}
+	}*/
 
 	// run the gamestate update
 	GameStates.back()->Update(DeltaTime);
@@ -170,6 +236,18 @@ void Game::Draw()
 
 void Game::HandleGarbage()
 {
+	// run through all game states and check if they need to be deleted
+	for (vector<GameState*>::iterator State = GameStates.begin(); State < GameStates.end();) {
+		if ((*State)->ShouldDelete()) {
+			delete* State;
+			State = GameStates.erase(State);
+			continue;
+		}
+
+		// Increment the iterator if we didn't delete the state
+		State++;
+	}
+
 	// run the gamestate Handle Garbage
 	GameStates.back()->HandleGarbage();
 }
